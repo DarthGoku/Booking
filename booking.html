@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reserve a Time Slot</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<style>
+  :root {
+    --bg: #f5f2ee;
+    --surface: #ffffff;
+    --surface2: #faf8f6;
+    --border: #e2ddd8;
+    --accent: #a07840;
+    --accent-dim: rgba(160,120,64,0.10);
+    --accent-glow: rgba(160,120,64,0.18);
+    --text: #1e1c1a;
+    --muted: #8c857d;
+    --error: #c0523f;
+    --success: #4a8c6a;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: -10%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 800px;
+    height: 600px;
+    background: radial-gradient(ellipse, rgba(160,120,64,0.07) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page-wrap {
+    width: 100%;
+    max-width: 620px;
+    padding: 80px 24px 60px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 52px;
+    animation: fadeUp 0.7s ease both;
+  }
+
+  .header-eyebrow {
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  .header-eyebrow::before,
+  .header-eyebrow::after {
+    content: '';
+    width: 28px;
+    height: 1px;
+    background: var(--accent);
+    opacity: 0.45;
+  }
+
+  h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(36px, 6vw, 52px);
+    letter-spacing: -0.01em;
+    color: var(--text);
+    line-height: 1.1;
+    margin-bottom: 13px;
+  }
+
+  .header-sub {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.65;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 44px;
+    box-shadow: 0 2px 24px rgba(120,100,70,0.07);
+    animation: fadeUp 0.7s 0.1s ease both;
+  }
+
+  @media (max-width: 520px) {
+    .card { padding: 28px 20px; }
+    .page-wrap { padding: 48px 16px 40px; }
+  }
+
+  .form-section { margin-bottom: 36px; }
+
+  .section-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .field { margin-bottom: 18px; }
+
+  .field label {
+    display: block;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 7px;
+    letter-spacing: 0.04em;
+  }
+
+  .field input, .field select, .field textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 300;
+    padding: 12px 15px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .field input[type="date"]::-webkit-calendar-picker-indicator {
+    opacity: 0.4;
+    cursor: pointer;
+  }
+
+  .field input:focus, .field select:focus, .field textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-dim);
+    background: #fff;
+  }
+
+  .field select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238c857d' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 40px;
+    cursor: pointer;
+  }
+
+  .field select option { background: #fff; color: var(--text); }
+
+  .field textarea {
+    resize: vertical;
+    min-height: 92px;
+    line-height: 1.55;
+  }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  @media (max-width: 440px) { .two-col { grid-template-columns: 1fr; } }
+
+  .unavail-note {
+    background: rgba(192,82,63,0.05);
+    border: 1px solid rgba(192,82,63,0.18);
+    border-radius: 3px;
+    padding: 11px 14px;
+    font-size: 12px;
+    color: #a0442e;
+    line-height: 1.5;
+    margin-top: -4px;
+    margin-bottom: 18px;
+    display: none;
+  }
+
+  .unavail-note.visible { display: block; }
+
+  .field-error {
+    font-size: 11.5px;
+    color: var(--error);
+    margin-top: 5px;
+    display: none;
+  }
+
+  .field-error.visible { display: block; }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 32px 0;
+  }
+
+  .btn-submit {
+    width: 100%;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12.5px;
+    font-weight: 500;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    padding: 15px 24px;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+  }
+
+  .btn-submit:hover {
+    opacity: 0.9;
+    box-shadow: 0 4px 20px var(--accent-glow);
+    transform: translateY(-1px);
+  }
+
+  .btn-submit:active { transform: translateY(0); }
+
+  .btn-submit:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  .btn-submit .spinner {
+    display: none;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin: 0 auto;
+  }
+
+  .btn-submit.loading .btn-text { display: none; }
+  .btn-submit.loading .spinner { display: block; }
+
+  .success-screen {
+    display: none;
+    text-align: center;
+    padding: 16px 0;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .success-screen.visible { display: block; }
+  .card.hidden { display: none; }
+  .header.hidden { display: none; }
+
+  .success-icon {
+    width: 62px;
+    height: 62px;
+    border: 1.5px solid var(--accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 26px;
+    position: relative;
+    background: rgba(160,120,64,0.06);
+  }
+
+  .success-icon svg { stroke: var(--accent); }
+
+  .success-icon::before {
+    content: '';
+    position: absolute;
+    inset: -8px;
+    border-radius: 50%;
+    border: 1px solid rgba(160,120,64,0.12);
+  }
+
+  .success-screen h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: 36px;
+    margin-bottom: 14px;
+    letter-spacing: -0.01em;
+    color: var(--text);
+  }
+
+  .success-screen p {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.7;
+    max-width: 360px;
+    margin: 0 auto 10px;
+  }
+
+  .success-details {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 20px 24px;
+    margin: 28px auto 0;
+    max-width: 380px;
+    text-align: left;
+  }
+
+  .success-detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    gap: 16px;
+  }
+
+  .success-detail-row:last-child { border-bottom: none; }
+
+  .success-detail-row span:first-child {
+    color: var(--muted);
+    font-size: 10.5px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    min-width: 70px;
+    padding-top: 2px;
+  }
+
+  .success-detail-row span:last-child {
+    text-align: right;
+    font-weight: 400;
+    color: var(--text);
+  }
+
+  .success-accent-line {
+    width: 36px;
+    height: 1px;
+    background: var(--accent);
+    margin: 18px auto;
+    opacity: 0.45;
+  }
+
+  .footer {
+    text-align: center;
+    margin-top: 32px;
+    font-size: 11px;
+    color: #c0b8b0;
+    letter-spacing: 0.07em;
+    animation: fadeUp 0.7s 0.2s ease both;
+  }
+
+  .form-error-banner {
+    background: rgba(192,82,63,0.06);
+    border: 1px solid rgba(192,82,63,0.2);
+    border-radius: 3px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--error);
+    margin-bottom: 22px;
+    display: none;
+    line-height: 1.5;
+  }
+
+  .form-error-banner.visible { display: block; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="page-wrap">
+
+  <div class="header">
+    <div class="header-eyebrow">Scheduling</div>
+    <h1>Reserve a Time Slot</h1>
+    <p class="header-sub">Choose your preferred date and time window. We'll confirm your booking shortly.</p>
+  </div>
+
+  <div class="card" id="bookingCard">
+    <div class="form-error-banner" id="formErrorBanner"></div>
+
+    <!-- Date & Time -->
+    <div class="form-section">
+      <div class="section-label">Date &amp; Time</div>
+
+      <div class="field">
+        <label>Date</label>
+        <input type="date" id="dateInput">
+        <div class="field-error" id="err-date">Please select a valid date.</div>
+      </div>
+
+      <div id="unavailNote" class="unavail-note">
+        ⚠ On weekdays, only <strong>12:00 AM</strong> is available as an overnight start, and daytime hours <strong>9:00 AM – 5:00 PM</strong> are unavailable.
+      </div>
+
+      <div class="two-col">
+        <div class="field">
+          <label>Start Time</label>
+          <select id="startTime"></select>
+          <div class="field-error" id="err-startTime">Please select a start time.</div>
+        </div>
+        <div class="field">
+          <label>End Time</label>
+          <select id="endTime"></select>
+          <div class="field-error" id="err-endTime">Please select an end time after the start.</div>
+        </div>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- Purpose of Booking -->
+    <div class="form-section" style="margin-bottom:32px;">
+      <div class="section-label">Purpose of Booking</div>
+      <div class="field" style="margin-bottom:0;">
+        <label>Describe the purpose of this booking <span style="color:var(--muted);font-size:11px;">(optional)</span></label>
+        <textarea id="notes" placeholder="This booking is for…"></textarea>
+      </div>
+    </div>
+
+    <button class="btn-submit" id="submitBtn" onclick="submitBooking()">
+      <span class="btn-text">Confirm Booking</span>
+      <span class="spinner"></span>
+    </button>
+  </div>
+
+  <!-- Success Screen -->
+  <div class="success-screen" id="successScreen">
+    <div class="success-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+    </div>
+
+    <h2>Booking Confirmed</h2>
+    <div class="success-accent-line"></div>
+    <p>Thank you for reaching out. Your time slot has been successfully reserved, and a notification has been sent.</p>
+    <p style="margin-top:8px;">We look forward to seeing you :)</p>
+
+    <div class="success-details" id="successDetails"></div>
+  </div>
+
+  <div class="footer">Secure &nbsp;·&nbsp; Private &nbsp;·&nbsp; Confidential</div>
+</div>
+
+<script>
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  function formatTime(h, m) {
+    const suffix = h < 12 ? 'AM' : 'PM';
+    const displayH = h === 0 ? 12 : h > 12 ? h - 12 : h;
+    return `${displayH}:${pad(m)} ${suffix}`;
+  }
+
+  function isWeekday(dateStr) {
+    if (!dateStr) return false;
+    const [y, mo, d] = dateStr.split('-').map(Number);
+    const day = new Date(y, mo - 1, d).getDay();
+    return day >= 1 && day <= 5;
+  }
+
+  // Returns all allowed slots for a date (no filter by start/end yet)
+  // Rules:
+  //   - Always block 2:00 AM – 9:00 AM (totalMin 120–539)
+  //   - Weekdays: block 9:00 AM – 5:00 PM (totalMin 540–1019)
+  //   - Weekdays: block ALL other AM hours (totalMin 1–119, i.e. 12:30 AM – 1:30 AM)
+  //     keeping only 12:00 AM (totalMin 0)
+  //   - 12:00 AM (midnight, totalMin 0) is always allowed as a boundary
+  // End time cap: up to and including 12:00 AM (next day = totalMin 0, treated as 1440 for end)
+  function getAllSlots(dateStr) {
+    const weekday = isWeekday(dateStr);
+    const slots = [];
+    let midnightSlot = null;
+    for (let h = 0; h < 24; h++) {
+      for (let m = 0; m < 60; m += 30) {
+        const totalMin = h * 60 + m;
+        // Always block 2:00 AM – 8:59 AM
+        if (totalMin >= 120 && totalMin < 540) continue;
+        // Weekdays: block 9:00 AM – 4:59 PM
+        if (weekday && totalMin >= 540 && totalMin < 1020) continue;
+        // Weekdays: block 12:30 AM – 1:59 AM (keep only 12:00 AM)
+        if (weekday && totalMin > 0 && totalMin < 120) continue;
+        // Hold midnight aside so it gets appended last
+        if (totalMin === 0) { midnightSlot = { h, m, label: formatTime(h, m), totalMin }; continue; }
+        slots.push({ h, m, label: formatTime(h, m), totalMin });
+      }
+    }
+    // Append midnight at the very end so it sits after 11:30 PM
+    if (midnightSlot) slots.push(midnightSlot);
+    return slots;
+  }
+
+  // toMin: converts "HH:MM" string to integer minutes.
+  // Midnight (00:00) is treated as 1440 so it sorts correctly as end-of-day.
+  function toMin(val) {
+    if (!val) return null;
+    const [h, m] = val.split(':').map(Number);
+    const raw = h * 60 + m;
+    return raw === 0 ? 1440 : raw;
+  }
+
+  function slotVal(s) { return `${pad(s.h)}:${pad(s.m)}`; }
+
+  let allSlots = []; // populated on date change
+
+  function populateStart(filterBeforeVal) {
+    const startSel = document.getElementById('startTime');
+    const prev = startSel.value;
+    startSel.innerHTML = '<option value="">— Select —</option>';
+    // cap: midnight treated as 1440, so anything < 1440 is valid as a start
+    const cap = filterBeforeVal ? toMin(filterBeforeVal) : 1440;
+    allSlots.forEach(s => {
+      const sMin = s.totalMin === 0 ? 1440 : s.totalMin;
+      // Exclude midnight from Start Time; include all others strictly before cap
+      if (sMin < cap && sMin !== 1440) {
+        const v = slotVal(s);
+        startSel.innerHTML += `<option value="${v}"${v === prev ? ' selected' : ''}>${s.label}</option>`;
+      }
+    });
+    if (prev && startSel.querySelector(`option[value="${prev}"]`)) startSel.value = prev;
+  }
+
+  function populateEnd(filterAfterVal) {
+    const endSel = document.getElementById('endTime');
+    const prev = endSel.value;
+    endSel.innerHTML = '<option value="">— Select —</option>';
+    const floor = filterAfterVal ? toMin(filterAfterVal) : -1;
+    allSlots.forEach(s => {
+      const sMin = s.totalMin === 0 ? 1440 : s.totalMin;
+      // End slots: strictly after start floor
+      if (sMin > floor) {
+        const v = slotVal(s);
+        endSel.innerHTML += `<option value="${v}"${v === prev ? ' selected' : ''}>${s.label}</option>`;
+      }
+    });
+    if (prev && endSel.querySelector(`option[value="${prev}"]`)) endSel.value = prev;
+  }
+
+  function populateSelects(dateStr) {
+    allSlots = getAllSlots(dateStr);
+    populateStart(null);
+    populateEnd(null);
+    document.getElementById('unavailNote').classList.toggle('visible', isWeekday(dateStr));
+  }
+
+  const todayStr = new Date().toISOString().split('T')[0];
+  document.getElementById('dateInput').min = todayStr;
+  document.getElementById('dateInput').value = todayStr;
+  populateSelects(todayStr);
+
+  document.getElementById('dateInput').addEventListener('change', function() {
+    populateSelects(this.value);
+  });
+
+  document.getElementById('startTime').addEventListener('change', function() {
+    const v = this.value;
+    populateEnd(v || null);
+    const endSel = document.getElementById('endTime');
+    if (endSel.value && toMin(endSel.value) <= toMin(v)) endSel.value = '';
+  });
+
+  document.getElementById('endTime').addEventListener('change', function() {
+    const v = this.value;
+    populateStart(v || null);
+    const startSel = document.getElementById('startTime');
+    if (startSel.value && toMin(startSel.value) >= toMin(v)) startSel.value = '';
+  });
+
+  function showErr(id, show) {
+    const e = document.getElementById('err-' + id);
+    if (e) e.classList.toggle('visible', show);
+    const f = document.getElementById(id);
+    if (f) f.style.borderColor = show ? 'var(--error)' : '';
+  }
+
+  function validate() {
+    let ok = true;
+    const dt = document.getElementById('dateInput').value;
+    const st = document.getElementById('startTime').value;
+    const et = document.getElementById('endTime').value;
+    showErr('date', !dt); if (!dt) ok = false;
+    showErr('startTime', !st); if (!st) ok = false;
+    if (!et || toMin(et) <= toMin(st)) { showErr('endTime', true); ok = false; } else { showErr('endTime', false); }
+    return ok;
+  }
+
+  function formatDate(dateStr) {
+    const [y, mo, d] = dateStr.split('-').map(Number);
+    const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const date = new Date(y, mo - 1, d);
+    return `${days[date.getDay()]}, ${d} ${months[mo - 1]} ${y}`;
+  }
+
+  function timeLabel(val) {
+    if (!val) return '';
+    const [h, m] = val.split(':').map(Number);
+    return formatTime(h, m);
+  }
+
+  // ─── EmailJS config — fill these in after setting up emailjs.com ────────────
+  const EMAILJS_PUBLIC_KEY  = 'iph4ir6pfCeA1UqGi';
+  const EMAILJS_SERVICE_ID  = 'service_76yzfg5';
+  const EMAILJS_TEMPLATE_ID = 'namhuxo';
+  // ────────────────────────────────────────────────────────────────────────────
+
+  async function submitBooking() {
+    document.getElementById('formErrorBanner').classList.remove('visible');
+    if (!validate()) return;
+
+    const dateStr  = document.getElementById('dateInput').value;
+    const startVal = document.getElementById('startTime').value;
+    const endVal   = document.getElementById('endTime').value;
+    const notes    = document.getElementById('notes').value.trim();
+
+    const formattedDate  = formatDate(dateStr);
+    const formattedStart = timeLabel(startVal);
+    const formattedEnd   = timeLabel(endVal);
+
+    const btn = document.getElementById('submitBtn');
+    btn.classList.add('loading');
+    btn.disabled = true;
+
+    try {
+      await emailjs.send(
+        EMAILJS_SERVICE_ID,
+        EMAILJS_TEMPLATE_ID,
+        {
+          to_email  : 'abdulgabbar97@gmail.com',
+          date      : formattedDate,
+          from_time : formattedStart,
+          to_time   : formattedEnd,
+          purpose   : notes || '—',
+          sent_at   : new Date().toUTCString()
+        },
+        EMAILJS_PUBLIC_KEY
+      );
+    } catch(e) {
+      console.error('EmailJS error:', e);
+    }
+
+    btn.classList.remove('loading');
+    btn.disabled = false;
+    showSuccess(formattedDate, formattedStart, formattedEnd, notes);
+  }
+
+  function showSuccess(date, start, end, notes) {
+    document.getElementById('bookingCard').classList.add('hidden');
+    document.querySelector('.header').classList.add('hidden');
+    document.getElementById('successDetails').innerHTML = `
+      <div class="success-detail-row"><span>Date</span><span>${date}</span></div>
+      <div class="success-detail-row"><span>From</span><span>${start}</span></div>
+      <div class="success-detail-row"><span>Until</span><span>${end}</span></div>
+      ${notes ? `<div class="success-detail-row"><span>Purpose</span><span>${notes}</span></div>` : ''}
+    `;
+    document.getElementById('successScreen').classList.add('visible');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>
+</body>
+</html>
