@@ -394,6 +394,22 @@
 
   .form-error-banner.visible { display: block; }
 
+  .rose-wrap {
+    margin-top: 36px;
+    text-align: center;
+    animation: fadeUp 0.8s 0.3s ease both;
+  }
+
+  .rose-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 18px;
+    color: var(--accent);
+    margin-top: 10px;
+    letter-spacing: 0.04em;
+  }
+
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(14px); }
     to   { opacity: 1; transform: translateY(0); }
@@ -426,7 +442,7 @@
       </div>
 
       <div id="unavailNote" class="unavail-note">
-        ⚠ On weekdays, booking slots are available from <strong>5:00 PM onwards.</strong>
+        ⚠ During weekdays, booking slots are available from <strong>5:00 PM onwards.</strong>
       </div>
 
       <div class="two-col">
@@ -474,6 +490,64 @@
     <p style="margin-top:8px;">We look forward to seeing you :)</p>
 
     <div class="success-details" id="successDetails"></div>
+
+    <div class="rose-wrap">
+      <svg viewBox="0 0 160 200" width="150" height="188" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0 auto;">
+        <!-- Stem: gentle lean to the right, base at 76,195 curving to flower at 85,105 -->
+        <path d="M76 195 Q78 162 81 135 Q83 118 85 105" stroke="#7a9a68" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+
+        <!-- Leaf left -->
+        <path d="M80 150 Q62 140 56 124 Q68 128 79 142" fill="#92b87a" opacity="0.78"/>
+        <path d="M80 150 Q62 140 56 124" stroke="#6a8a58" stroke-width="1.1" fill="none" stroke-linecap="round"/>
+
+        <!-- Leaf right -->
+        <path d="M82 165 Q100 153 106 137 Q93 143 82 158" fill="#92b87a" opacity="0.72"/>
+        <path d="M82 165 Q100 153 106 137" stroke="#6a8a58" stroke-width="1.1" fill="none" stroke-linecap="round"/>
+
+        <!-- Sepal / calyx at (85,105) -->
+        <path d="M80 108 Q77 98 73 90 Q82 96 85 105" fill="#7a9a68" opacity="0.85"/>
+        <path d="M90 108 Q93 98 97 90 Q87 96 85 105" fill="#7a9a68" opacity="0.85"/>
+        <path d="M85 108 Q80 95 80 82 Q84 90 85 105" fill="#92b87a" opacity="0.7"/>
+        <path d="M85 108 Q90 95 90 82 Q86 90 85 105" fill="#92b87a" opacity="0.7"/>
+
+        <!-- Outer petals anchored at (85,105) -->
+        <path d="M85 105 Q60 95 50 70 Q70 78 85 98" fill="#e8bfb0" opacity="0.62"/>
+        <path d="M85 105 Q110 95 120 70 Q100 78 85 98" fill="#d9a898" opacity="0.62"/>
+        <path d="M85 105 Q65 88 63 60 Q79 72 85 96" fill="#eecbbf" opacity="0.55"/>
+        <path d="M85 105 Q105 88 107 60 Q91 72 85 96" fill="#ddb0a0" opacity="0.55"/>
+        <path d="M85 105 Q73 80 75 52 Q83 68 85 94" fill="#f0d0c5" opacity="0.58"/>
+        <path d="M85 105 Q97 80 95 52 Q87 68 85 94" fill="#e0b8a8" opacity="0.58"/>
+
+        <!-- Mid petals -->
+        <path d="M85 100 Q67 88 65 66 Q78 76 85 94" fill="#d4907c" opacity="0.68"/>
+        <path d="M85 100 Q103 88 105 66 Q92 76 85 94" fill="#c87a65" opacity="0.68"/>
+        <path d="M85 100 Q73 78 75 56 Q83 70 85 92" fill="#dda090" opacity="0.65"/>
+        <path d="M85 100 Q97 78 95 56 Q87 70 85 92" fill="#cc8870" opacity="0.65"/>
+
+        <!-- Inner petals -->
+        <path d="M85 96 Q73 82 75 64 Q82 74 85 90" fill="#c87060" opacity="0.78"/>
+        <path d="M85 96 Q97 82 95 64 Q88 74 85 90" fill="#b86050" opacity="0.78"/>
+        <path d="M85 94 Q78 78 80 62 Q84 72 85 88" fill="#d08070" opacity="0.72"/>
+        <path d="M85 94 Q92 78 90 62 Q86 72 85 88" fill="#c07060" opacity="0.72"/>
+
+        <!-- Centre: petal-shaped overlapping forms that deepen naturally inward -->
+        <path d="M85 90 Q79 80 80 68 Q84 75 85 86" fill="#b85848" opacity="0.60"/>
+        <path d="M85 90 Q91 80 90 68 Q86 75 85 86" fill="#a84838" opacity="0.60"/>
+        <path d="M85 86 Q80 77 81 67 Q84 73 85 83" fill="#a04040" opacity="0.55"/>
+        <path d="M85 86 Q90 77 89 67 Q86 73 85 83" fill="#983838" opacity="0.55"/>
+        <path d="M85 82 Q82 75 83 68 Q85 73 85 80" fill="#883030" opacity="0.50"/>
+        <path d="M85 82 Q88 75 87 68 Q85 73 85 80" fill="#803028" opacity="0.50"/>
+        <path d="M85 78 Q83 72 84 67 Q85 71 85 76" fill="#c07868" opacity="0.28"/>
+        <path d="M85 78 Q87 72 86 67 Q85 71 85 76" fill="#b86858" opacity="0.28"/>
+
+        <!-- Gold shimmer -->
+        <circle cx="73" cy="74" r="1.1" fill="#c9a96e" opacity="0.42"/>
+        <circle cx="97" cy="76" r="1.0" fill="#c9a96e" opacity="0.36"/>
+        <circle cx="80" cy="63" r="0.8" fill="#c9a96e" opacity="0.40"/>
+        <circle cx="90" cy="61" r="0.9" fill="#c9a96e" opacity="0.34"/>
+      </svg>
+      <p class="rose-text">This is for you</p>
+    </div>
   </div>
 
   <div class="footer">Secure &nbsp;·&nbsp; Private &nbsp;·&nbsp; Confidential</div>
