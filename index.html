@@ -442,7 +442,7 @@
       </div>
 
       <div id="unavailNote" class="unavail-note">
-        ⚠ During weekdays, booking slots are available from <strong>5:00 PM onwards.</strong>
+        ⚠ During weekdays, booking slots are available from <strong>5:00 PM onwards</strong> — and from <strong>2:00 PM onwards on Fridays.</strong>
       </div>
 
       <div class="two-col">
@@ -569,6 +569,12 @@
     return day >= 1 && day <= 5;
   }
 
+  function isFriday(dateStr) {
+    if (!dateStr) return false;
+    const [y, mo, d] = dateStr.split('-').map(Number);
+    return new Date(y, mo - 1, d).getDay() === 5;
+  }
+
   // Returns all allowed slots for a date (no filter by start/end yet)
   // Rules:
   //   - Always block 2:00 AM – 9:00 AM (totalMin 120–539)
@@ -579,6 +585,7 @@
   // End time cap: up to and including 12:00 AM (next day = totalMin 0, treated as 1440 for end)
   function getAllSlots(dateStr) {
     const weekday = isWeekday(dateStr);
+    const friday  = isFriday(dateStr);
     const slots = [];
     let midnightSlot = null;
     for (let h = 0; h < 24; h++) {
@@ -586,8 +593,10 @@
         const totalMin = h * 60 + m;
         // Always block 2:00 AM – 8:59 AM
         if (totalMin >= 120 && totalMin < 540) continue;
-        // Weekdays: block 9:00 AM – 4:59 PM
-        if (weekday && totalMin >= 540 && totalMin < 1020) continue;
+        // Weekdays: block 9:00 AM – 4:59 PM (540–1019)
+        // But on Fridays only block 9:00 AM – 1:59 PM (540–839), allowing 2pm onwards
+        if (weekday && !friday && totalMin >= 540 && totalMin < 1020) continue;
+        if (friday && totalMin >= 540 && totalMin < 840) continue;
         // Weekdays: block 12:30 AM – 1:59 AM (keep only 12:00 AM)
         if (weekday && totalMin > 0 && totalMin < 120) continue;
         // Hold midnight aside so it gets appended last
@@ -595,7 +604,6 @@
         slots.push({ h, m, label: formatTime(h, m), totalMin });
       }
     }
-    // Append midnight at the very end so it sits after 11:30 PM
     if (midnightSlot) slots.push(midnightSlot);
     return slots;
   }
