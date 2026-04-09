@@ -441,7 +441,7 @@
         <div class="field-error" id="err-date">Please select a valid date.</div>
       </div>
 
-      <div id="unavailNote" class="unavail-note">
+      <div id="unavailNote" class="unavail-note visible">
         ⚠ During weekdays, booking slots are available from <strong>5:00 PM onwards</strong> — and from <strong>2:00 PM onwards on Fridays.</strong>
       </div>
 
@@ -668,16 +668,7 @@
     allSlots = getAllSlots(dateStr);
     populateStart(null);
     populateEnd(null);
-    const note = document.getElementById('unavailNote');
-    if (isWeekend(dateStr)) {
-      note.innerHTML = '⚠ On weekends, booking slots are available from <strong>10:00 AM onwards.</strong>';
-      note.classList.add('visible');
-    } else if (isWeekday(dateStr)) {
-      note.innerHTML = '⚠ During weekdays, booking slots are available from <strong>5:00 PM onwards</strong> — and from <strong>2:00 PM onwards on Fridays.</strong>';
-      note.classList.add('visible');
-    } else {
-      note.classList.remove('visible');
-    }
+    document.getElementById('unavailNote').classList.add('visible');
   }
 
   const todayStr = new Date().toISOString().split('T')[0];
