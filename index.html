@@ -569,10 +569,11 @@
     return day >= 1 && day <= 5;
   }
 
-  function isFriday(dateStr) {
+  function isWeekend(dateStr) {
     if (!dateStr) return false;
     const [y, mo, d] = dateStr.split('-').map(Number);
-    return new Date(y, mo - 1, d).getDay() === 5;
+    const day = new Date(y, mo - 1, d).getDay();
+    return day === 0 || day === 6;
   }
 
   // Returns all allowed slots for a date (no filter by start/end yet)
@@ -583,22 +584,31 @@
   //     keeping only 12:00 AM (totalMin 0)
   //   - 12:00 AM (midnight, totalMin 0) is always allowed as a boundary
   // End time cap: up to and including 12:00 AM (next day = totalMin 0, treated as 1440 for end)
+  function isFriday(dateStr) {
+    if (!dateStr) return false;
+    const [y, mo, d] = dateStr.split('-').map(Number);
+    return new Date(y, mo - 1, d).getDay() === 5;
+  }
+
   function getAllSlots(dateStr) {
     const weekday = isWeekday(dateStr);
     const friday  = isFriday(dateStr);
+    const weekend = isWeekend(dateStr);
     const slots = [];
     let midnightSlot = null;
     for (let h = 0; h < 24; h++) {
       for (let m = 0; m < 60; m += 30) {
         const totalMin = h * 60 + m;
-        // Always block 2:00 AM – 8:59 AM
+        // Always block 2:00 AM – 8:59 AM (every day)
         if (totalMin >= 120 && totalMin < 540) continue;
-        // Weekdays: block 9:00 AM – 4:59 PM (540–1019)
-        // But on Fridays only block 9:00 AM – 1:59 PM (540–839), allowing 2pm onwards
+        // Always block 12:30 AM – 1:59 AM (every day, keep only 12:00 AM as end cap)
+        if (totalMin > 0 && totalMin < 120) continue;
+        // Weekdays (Mon–Thu): block 9:00 AM – 4:59 PM
         if (weekday && !friday && totalMin >= 540 && totalMin < 1020) continue;
+        // Friday: block 9:00 AM – 1:59 PM only
         if (friday && totalMin >= 540 && totalMin < 840) continue;
-        // Weekdays: block 12:30 AM – 1:59 AM (keep only 12:00 AM)
-        if (weekday && totalMin > 0 && totalMin < 120) continue;
+        // Weekend: block 9:00 AM – 9:59 AM (allow from 10:00 AM = 600 min)
+        if (weekend && totalMin >= 540 && totalMin < 600) continue;
         // Hold midnight aside so it gets appended last
         if (totalMin === 0) { midnightSlot = { h, m, label: formatTime(h, m), totalMin }; continue; }
         slots.push({ h, m, label: formatTime(h, m), totalMin });
@@ -658,7 +668,16 @@
     allSlots = getAllSlots(dateStr);
     populateStart(null);
     populateEnd(null);
-    document.getElementById('unavailNote').classList.toggle('visible', isWeekday(dateStr));
+    const note = document.getElementById('unavailNote');
+    if (isWeekend(dateStr)) {
+      note.innerHTML = '⚠ On weekends, booking slots are available from <strong>10:00 AM onwards.</strong>';
+      note.classList.add('visible');
+    } else if (isWeekday(dateStr)) {
+      note.innerHTML = '⚠ During weekdays, booking slots are available from <strong>5:00 PM onwards</strong> — and from <strong>2:00 PM onwards on Fridays.</strong>';
+      note.classList.add('visible');
+    } else {
+      note.classList.remove('visible');
+    }
   }
 
   const todayStr = new Date().toISOString().split('T')[0];
